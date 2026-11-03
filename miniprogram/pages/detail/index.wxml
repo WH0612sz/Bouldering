@@ -1,0 +1,25 @@
+<topbar title="视频记录" back bind:back="back"/><view class="page"><view wx:if="{{loading}}" class="empty muted">加载中…</view><block wx:if="{{item}}"><view wx:if="{{url}}" class="player">
+  <video id="analysis-video" src="{{url}}" class="video" controls object-fit="contain" bindtimeupdate="videoTime" binderror="playbackError"/>
+  <canvas wx:if="{{skeleton||hip}}" id="pose-canvas" canvas-id="pose-canvas" class="pose-canvas" disable-scroll/>
+</view><view wx:else class="video pending"><text>{{item.state==='FAILED'?'视频准备失败':'视频已保存，正在准备播放'}}</text><text class="muted">可以返回，处理将在服务端继续</text></view><view class="between section"><text class="title">{{item.name}}</text><text class="pill">{{item.completion}}</text></view><view class="muted section">{{item.climb_date}} · {{item.route_name||'未归组'}}</view><view wx:if="{{poseState==='READY'}}" class="layer-controls section">
+  <label>骨架 <switch checked="{{skeleton}}" color="#829C72" bindchange="toggleSkeleton"/></label>
+  <label>髋部轨迹 <switch checked="{{hip}}" color="#829C72" bindchange="toggleHip"/></label>
+</view>
+<view class="detail-tabs section"><view class="current-tab">动作分析</view><button class="upcoming-tab" bindtap="aiSoon">AI建议</button></view>
+<view class="card section">
+  <block wx:if="{{poseState==='READY'}}">
+    <view class="between"><text>动作时序</text><text class="muted">{{windowLabel}}</text></view>
+    <view wx:for="{{tracks}}" wx:key="name" class="motion-row">
+      <text class="motion-label">{{item.name}}</text>
+      <view class="motion-lane">
+        <view wx:for="{{item.spans}}" wx:for-item="segment" wx:key="start" class="motion-span {{segment.unknown?'unknown':''}}" style="left:{{segment.left}}%;width:{{segment.width}}%" data-start="{{segment.start}}" bindtap="seekMotion"/>
+        <view class="motion-cursor" style="left:{{cursor}}%"/>
+      </view>
+    </view>
+    <view class="muted section">绿色为明显移动，灰色为无法判断。轨迹为髋部二维位置。</view>
+  </block>
+  <view wx:elif="{{poseState==='QUEUED'||poseState==='RUNNING'}}" class="muted">正在识别动作，可先回看视频。</view>
+  <view wx:else class="muted">{{poseState==='FAILED'?'动作识别失败，可重试。':'视频已保存。'}}</view>
+  <button wx:if="{{poseState==='NOT_STARTED'||poseState==='FAILED'}}" bindtap="startPose" class="section">{{poseState==='FAILED'?'重试动作识别':'识别动作'}}</button>
+  <view wx:if="{{poseError}}" class="error section">{{poseError}}</view>
+</view><button wx:if="{{item.state==='FAILED'}}" bindtap="retry" class="primary section">重试视频处理</button></block><view wx:if="{{error}}" class="error section">{{error}}<text bindtap="refresh"> · 重新加载</text></view></view>

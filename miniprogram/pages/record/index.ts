@@ -1,0 +1,17 @@
+import { privacy,message,api,today } from '../../services/api';
+import { config } from '../../config';
+import { Draft,UploadSession } from '../../services/types';
+const app=getApp<{globalData:{draft:Draft|null}}>();
+Page({data:{camera:false,denied:false,recording:false,position:'back',seconds:0,time:'00:00',recover:false,local:config.authMode==='development'},timer:0,handled:false,
+ async onShow(){this.setData({recover:!!wx.getStorageSync('climb_pending')});try{await privacy();this.setData({camera:true});}catch{this.setData({denied:true});}},
+ onHide(){if(this.data.recording)this.stop();this.setData({camera:false});},onUnload(){clearInterval(this.timer);},
+ cameraError(){this.setData({denied:true,camera:false});},async enable(){try{await privacy();wx.openSetting({success:()=>this.setData({camera:true,denied:false})});}catch(e){wx.showToast({title:message(e),icon:'none'});}},
+ flip(){if(!this.data.recording)this.setData({position:this.data.position==='back'?'front':'back'});},
+ shoot(){if(this.data.recording){this.stop();return;}this.handled=false;const c=wx.createCameraContext();c.startRecord({timeout:config.maxSeconds,timeoutCallback:r=>this.finish(r.tempVideoPath,r.tempThumbPath),success:()=>{this.setData({recording:true,seconds:0,time:'00:00'});wx.hideTabBar({});this.timer=setInterval(()=>{const n=this.data.seconds+1;this.setData({seconds:n,time:`${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`});},1000) as unknown as number;},fail:()=>wx.showToast({title:'无法开始录像，请检查相机与麦克风权限',icon:'none'})});},
+ stop(){wx.createCameraContext().stopRecord({success:r=>this.finish(r.tempVideoPath,r.tempThumbPath),fail:()=>{clearInterval(this.timer);this.setData({recording:false});wx.showTabBar({});}});},
+ interrupted(e:WechatMiniprogram.CustomEvent){const r=e.detail as {tempVideoPath?:string;tempThumbPath?:string};if(r.tempVideoPath)this.finish(r.tempVideoPath,r.tempThumbPath||'');else{clearInterval(this.timer);this.setData({recording:false});wx.showTabBar({});}},
+ finish(path:string,thumb:string){if(this.handled||!path)return;this.handled=true;clearInterval(this.timer);this.setData({recording:false});wx.showTabBar({});wx.getVideoInfo({src:path,success:r=>this.confirm({path,thumb,duration:r.duration,size:r.size*1024,name:'攀爬记录',date:today()}),fail:()=>wx.showToast({title:'未读取到视频，请从相册选择',icon:'none'})});},
+ async album(){try{await privacy();wx.chooseMedia({count:1,mediaType:['video'],sourceType:['album'],maxDuration:config.maxSeconds,success:r=>{const f=r.tempFiles[0];this.confirm({path:f.tempFilePath,thumb:f.thumbTempFilePath||'',duration:f.duration||0,size:f.size,name:'攀爬记录',date:today()});}});}catch(e){wx.showToast({title:message(e),icon:'none'});}},
+ confirm(draft:Draft){if(draft.duration>config.maxSeconds+.2||draft.size>config.maxBytes){wx.showToast({title:'请选择3分钟、300MB以内的视频',icon:'none'});return;}app.globalData.draft=draft;wx.navigateTo({url:'/pages/confirm/index'});},
+ async recover(){const d=wx.getStorageSync('climb_pending') as Draft;if(!d)return;try{if(d.uploadId){const u=await api<UploadSession>('/v1/uploads/'+d.uploadId);if(u.state==='COMMITTED'&&u.attempt_id){wx.removeStorageSync('climb_pending');wx.navigateTo({url:'/pages/detail/index?id='+u.attempt_id});return;}if(u.state==='CANCELLED'){wx.removeStorageSync('climb_pending');this.setData({recover:false});return;}}app.globalData.draft=d;wx.navigateTo({url:'/pages/confirm/index'});}catch(e){wx.showToast({title:message(e),icon:'none'});}}
+});

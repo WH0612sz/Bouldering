@@ -1,0 +1,14 @@
+{
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "miniprogram-api-typings": "^5.2.3"
+  },
+  "name": "climb-record-miniprogram",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test:miniprogram": "node scripts/test-miniprogram.cjs"
+  }
+}

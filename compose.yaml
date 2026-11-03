@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: climb
+      POSTGRES_USER: climb
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set database password}
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U climb]
+      interval: 5s
+      retries: 12
+  api:
+    build: ./backend
+    environment: &app_env
+      APP_ENV: production
+      ALLOW_DEV_LOGIN: '0'
+      DATABASE_URL: postgresql+psycopg://climb:${POSTGRES_PASSWORD}@db:5432/climb
+      STORAGE_DIR: /app/var/storage
+      PUBLIC_URL: ${PUBLIC_URL:?set HTTPS public URL}
+      SIGNING_SECRET: ${SIGNING_SECRET:?set >=32-char secret}
+      WECHAT_APPID: ${WECHAT_APPID:?set AppID}
+      WECHAT_APPSECRET: ${WECHAT_APPSECRET:?set AppSecret}
+    ports: [127.0.0.1:8000:8000]
+    volumes: [media_data:/app/var]
+    depends_on:
+      db: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 5s
+      retries: 12
+    restart: unless-stopped
+  worker:
+    build: ./backend
+    command: [python, -m, app.worker]
+    environment: *app_env
+    volumes: [media_data:/app/var]
+    depends_on:
+      db: {condition: service_healthy}
+      api: {condition: service_healthy}
+    restart: unless-stopped
+volumes:
+  postgres_data:
+  media_data:

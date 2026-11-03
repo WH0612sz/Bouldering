@@ -1,0 +1,46 @@
+{
+  "pages": [
+    "pages/record/index",
+    "pages/mine/index",
+    "pages/confirm/index",
+    "pages/detail/index"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#F4F6F1",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#7B8779",
+    "selectedColor": "#365338",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/record/index",
+        "text": "记录",
+        "iconPath": "assets/tab-record.png",
+        "selectedIconPath": "assets/tab-record-active.png"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的",
+        "iconPath": "assets/tab-mine.png",
+        "selectedIconPath": "assets/tab-mine-active.png"
+      }
+    ]
+  },
+  "usingComponents": {
+    "topbar": "/components/topbar/index"
+  },
+  "permission": {
+    "scope.camera": {
+      "desc": "用于录制你的攀岩视频"
+    },
+    "scope.record": {
+      "desc": "用于录制攀岩视频的声音"
+    }
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

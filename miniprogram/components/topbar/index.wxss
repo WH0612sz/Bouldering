@@ -1,0 +1,1 @@
+.nav{position:relative;display:flex;align-items:center;padding-left:36rpx;font-size:32rpx;font-weight:600}.back{font-size:64rpx;font-weight:400;width:60rpx;line-height:1;margin-left:-12rpx}

@@ -1,0 +1,15 @@
+{
+  "description": "攀岩记录与复盘 · M2 本地交付",
+  "miniprogramRoot": "build/miniprogram/",
+  "compileType": "miniprogram",
+  "appid": "wx8e0fe3d81a0f1449",
+  "projectname": "climb-record",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "minified": true,
+    "urlCheck": true
+  },
+  "libVersion": "latest",
+  "condition": {}
+}

@@ -1,0 +1,1 @@
+Component({properties:{title:{type:String,value:''},back:{type:Boolean,value:false}},data:{status:20,height:44,right:100},lifetimes:{attached(){const w=wx.getWindowInfo();const c=wx.getMenuButtonBoundingClientRect();this.setData({status:w.statusBarHeight,height:(c.top-w.statusBarHeight)*2+c.height,right:w.windowWidth-c.left+10});}},methods:{back(){this.triggerEvent('back');}}});

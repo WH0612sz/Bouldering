@@ -1,0 +1,1 @@
+<view style="padding-top:{{status}}px"><view class="nav" style="height:{{height}}px;padding-right:{{right}}px"><view wx:if="{{back}}" class="back" bindtap="back">‹</view><text>{{title}}</text></view></view>
